@@ -13,9 +13,11 @@
         <button id="newProfileButton" class="create-button">Nueva Conexión</button>
       </div>
     </h1>
+
     <div class="container">
       <div class="profiles-panel">
         <h2>Perfiles Guardados</h2>
+
         <!-- Pestañas -->
         <div class="tabs">
           <div id="allTab" class="tab active">Todos</div>
@@ -27,71 +29,108 @@
         </ul>
       </div>
 
-      <div class="form-panel" id="formPanel">
-        <h2 id="formTitle">Configuración de Conexión</h2>
-        <form id="sshForm">
-          <div class="form-group">
-            <label for="profileName">Nombre del Perfil</label>
-            <input type="text" id="profileName" required />
-          </div>
+      <div class="info-panel" id="infoPanel">
+        <!-- Panel de información del perfil seleccionado -->
+        <div id="selectedProfileInfo" class="hidden">
+          <h2 id="profileName"></h2>
 
-          <div class="form-group">
-            <label for="host">Host</label>
-            <input type="text" id="host" required />
-          </div>
-
-          <div class="form-group">
-            <label for="port">Puerto</label>
-            <input type="number" id="port" value="22" />
-          </div>
-
-          <div class="form-group">
-            <label for="username">Usuario</label>
-            <input type="text" id="username" required />
-          </div>
-
-          <div class="form-group">
-            <label for="authType">Tipo de Autenticación</label>
-            <select id="authType">
-              <option value="password">Contraseña</option>
-              <option value="keyFile">Archivo de Clave</option>
-            </select>
-          </div>
-
-          <div id="passwordGroup" class="form-group">
-            <label for="password">Contraseña</label>
-            <input type="password" id="password" />
-          </div>
-
-          <div id="keyFileGroup" class="form-group hidden">
-            <label for="keyFile">Archivo de Clave</label>
-            <div style="display: flex; gap: 10px">
-              <input type="text" id="keyFile" readonly />
-              <button type="button" id="browseKeyFile">Explorar</button>
+          <div class="profile-info">
+            <div class="info-row">
+              <div class="info-label">Host:</div>
+              <div id="profileHost" class="info-value"></div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Puerto:</div>
+              <div id="profilePort" class="info-value"></div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Usuario:</div>
+              <div id="profileUsername" class="info-value"></div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">Autenticación:</div>
+              <div id="profileAuthType" class="info-value"></div>
             </div>
           </div>
 
-          <div id="passphraseGroup" class="form-group hidden">
-            <label for="passphrase">Frase de Contraseña (si es necesario)</label>
-            <input type="password" id="passphrase" />
+          <div class="buttons-row">
+            <button id="connectButton">Conectar</button>
+            <button id="openTerminalButton" class="terminal hidden" disabled>Abrir Terminal</button>
+            <button id="editButton">Editar</button>
+            <button id="deleteButton" class="delete">Eliminar</button>
           </div>
 
-          <div class="actions-row">
-            <button type="button" id="saveButton">Guardar Perfil</button>
-            <button type="button" id="connectButton">Conectar</button>
-            <button type="button" id="openTerminalButton" class="terminal hidden" disabled>Abrir Terminal</button>
-            <button type="button" id="deleteButton" class="delete" disabled>Eliminar Perfil</button>
-          </div>
-        </form>
+          <div id="statusMessage" class="status-message hidden"></div>
+        </div>
 
-        <div id="statusMessage" class="status-message hidden"></div>
-      </div>
-
-      <!-- Panel de bienvenida / sin selección -->
-      <div class="welcome-panel" id="welcomePanel">
-        <div class="welcome-content">
-          <h2>Gestor de Conexiones SSH</h2>
+        <!-- Mensaje de bienvenida cuando no hay perfil seleccionado -->
+        <div id="welcomeMessage" class="welcome-message">
+          <h2>Bienvenido al Gestor de Conexiones SSH</h2>
           <p>Selecciona un perfil existente o crea uno nuevo para comenzar.</p>
+          <button id="welcomeNewButton" class="create-button">Nueva Conexión</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para crear/editar perfiles -->
+    <div class="modal-overlay" id="profileModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modalTitle">Nueva Conexión</h3>
+          <button class="modal-close" id="modalClose">&times;</button>
+        </div>
+        <div class="modal-content">
+          <form id="sshForm">
+            <div class="form-group">
+              <label for="modalProfileName">Nombre del Perfil</label>
+              <input type="text" id="modalProfileName" required />
+            </div>
+
+            <div class="form-group">
+              <label for="modalHost">Host</label>
+              <input type="text" id="modalHost" required />
+            </div>
+
+            <div class="form-group">
+              <label for="modalPort">Puerto</label>
+              <input type="number" id="modalPort" value="22" />
+            </div>
+
+            <div class="form-group">
+              <label for="modalUsername">Usuario</label>
+              <input type="text" id="modalUsername" required />
+            </div>
+
+            <div class="form-group">
+              <label for="modalAuthType">Tipo de Autenticación</label>
+              <select id="modalAuthType">
+                <option value="password">Contraseña</option>
+                <option value="keyFile">Archivo de Clave</option>
+              </select>
+            </div>
+
+            <div id="modalPasswordGroup" class="form-group">
+              <label for="modalPassword">Contraseña</label>
+              <input type="password" id="modalPassword" />
+            </div>
+
+            <div id="modalKeyFileGroup" class="form-group hidden">
+              <label for="modalKeyFile">Archivo de Clave</label>
+              <div style="display: flex; gap: 10px">
+                <input type="text" id="modalKeyFile" readonly />
+                <button type="button" id="modalBrowseKeyFile">Explorar</button>
+              </div>
+            </div>
+
+            <div id="modalPassphraseGroup" class="form-group hidden">
+              <label for="modalPassphrase">Frase de Contraseña (si es necesario)</label>
+              <input type="password" id="modalPassphrase" />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="secondary" id="modalCancel">Cancelar</button>
+          <button id="modalSave">Guardar</button>
         </div>
       </div>
     </div>
