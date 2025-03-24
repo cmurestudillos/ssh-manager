@@ -24,8 +24,8 @@ const activeConnections = new Map();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 800,
+    width: 1280,
+    height: 1024,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -35,7 +35,7 @@ function createWindow() {
 
   mainWindow.loadFile('index.html');
 
-  // Abrir DevTools en desarrollo
+  // Abrir DevTools en desarrollo (descomentar para depuración)
   // mainWindow.webContents.openDevTools();
 }
 
@@ -53,7 +53,8 @@ app.on('window-all-closed', function () {
 
 // Manejar eventos desde el renderer
 ipcMain.handle('get-ssh-profiles', async () => {
-  return store.get('sshProfiles', []);
+  const profiles = store.get('sshProfiles', []);
+  return profiles;
 });
 
 ipcMain.handle('get-favorites', async () => {
@@ -96,6 +97,14 @@ ipcMain.handle('delete-ssh-profile', async (event, profileName) => {
   const profiles = store.get('sshProfiles', []);
   const updatedProfiles = profiles.filter(p => p.name !== profileName);
   store.set('sshProfiles', updatedProfiles);
+
+  // También eliminar de favoritos si existe
+  const favorites = store.get('favorites', []);
+  if (favorites.includes(profileName)) {
+    const updatedFavorites = favorites.filter(name => name !== profileName);
+    store.set('favorites', updatedFavorites);
+  }
+
   return updatedProfiles;
 });
 
@@ -170,43 +179,30 @@ ipcMain.handle('open-shell', async (event, profileName) => {
         return;
       }
 
-      // Crear ventana para la terminal
-      const terminalWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
-        title: `SSH Terminal - ${profileName}`,
-        webPreferences: {
-          preload: path.join(__dirname, 'preload.js'),
-          nodeIntegration: false,
-          contextIsolation: true,
-        },
-      });
+      // Almacenar el stream para este proceso de renderizado
+      const webContents = event.sender;
 
-      // Almacenar el stream para esta ventana
-      terminalWindow.sshStream = stream;
-      terminalWindow.profileName = profileName;
-
-      terminalWindow.loadFile('terminal.html');
-
-      // Configurar el stream para reenviar datos a la ventana
+      // Configurar el stream para reenviar datos al proceso de renderizado
       stream.on('data', data => {
-        if (!terminalWindow.isDestroyed()) {
-          terminalWindow.webContents.send('terminal-data', data);
+        if (!webContents.isDestroyed()) {
+          webContents.send('terminal-data', data);
         }
       });
 
       stream.on('close', () => {
-        if (!terminalWindow.isDestroyed()) {
-          terminalWindow.webContents.send('terminal-data', '\r\n\x1b[1;31mConexión cerrada\x1b[0m\r\n');
+        if (!webContents.isDestroyed()) {
+          webContents.send('terminal-data', '\r\n\x1b[1;31mConexión cerrada\x1b[0m\r\n');
         }
       });
 
-      // Manejar cierre de ventana
-      terminalWindow.on('closed', () => {
-        if (stream) {
-          stream.end();
+      stream.on('error', err => {
+        if (!webContents.isDestroyed()) {
+          webContents.send('terminal-data', `\r\n\x1b[1;31mError: ${err.message}\x1b[0m\r\n`);
         }
       });
+
+      // Almacenar el stream para el sender actual
+      event.sender.sshStream = stream;
 
       resolve({ success: true, message: 'Terminal abierta' });
     });
@@ -214,24 +210,27 @@ ipcMain.handle('open-shell', async (event, profileName) => {
 });
 
 // Enviar datos a la terminal
-ipcMain.handle('terminal-input', (event, { data, windowId }) => {
-  const win = BrowserWindow.getAllWindows().find(w => w.id === windowId);
-  if (win && win.sshStream) {
-    win.sshStream.write(data);
+ipcMain.handle('terminal-input', (event, data) => {
+  const webContents = event.sender;
+
+  if (webContents && webContents.sshStream) {
+    webContents.sshStream.write(data);
     return true;
   }
   return false;
-});
-
-// Obtener el ID de la ventana
-ipcMain.handle('get-window-id', event => {
-  return BrowserWindow.fromWebContents(event.sender).id;
 });
 
 // Cerrar conexión SSH
 ipcMain.handle('disconnect-ssh', (event, profileName) => {
   const conn = activeConnections.get(profileName);
   if (conn) {
+    // Si hay un stream asociado al remitente, cerrarlo
+    if (event.sender.sshStream) {
+      event.sender.sshStream.end();
+      event.sender.sshStream = null;
+    }
+
+    // Cerrar la conexión
     conn.end();
     activeConnections.delete(profileName);
     return { success: true, message: 'Desconectado' };

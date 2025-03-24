@@ -61,13 +61,26 @@
           </div>
 
           <div id="statusMessage" class="status-message hidden"></div>
+
+          <!-- Terminal integrada -->
+          <div id="terminalContainer" class="terminal-container hidden">
+            <div class="terminal-header">
+              <div class="terminal-title">Terminal SSH</div>
+              <div class="terminal-actions">
+                <button id="clearTerminalBtn" class="terminal-action" title="Limpiar terminal">Limpiar</button>
+                <button id="increaseFontBtn" class="terminal-action" title="Aumentar tamaño de letra">A+</button>
+                <button id="decreaseFontBtn" class="terminal-action" title="Disminuir tamaño de letra">A-</button>
+                <button id="closeTerminalBtn" class="terminal-action close" title="Cerrar terminal">Cerrar</button>
+              </div>
+            </div>
+            <div id="embeddedTerminal" class="embedded-terminal"></div>
+          </div>
         </div>
 
         <!-- Mensaje de bienvenida cuando no hay perfil seleccionado -->
         <div id="welcomeMessage" class="welcome-message">
           <h2>Bienvenido al Gestor de Conexiones SSH</h2>
           <p>Selecciona un perfil existente o crea uno nuevo para comenzar.</p>
-          <button id="welcomeNewButton" class="create-button">Nueva Conexión</button>
         </div>
       </div>
     </div>

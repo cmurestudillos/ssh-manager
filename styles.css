@@ -1,7 +1,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
-  padding: 20px;
+  padding: 10px;
   background-color: #f5f5f5;
   color: #333;
 }
@@ -18,6 +18,7 @@ h1 {
 .container {
   display: flex;
   gap: 20px;
+  height: calc(100vh - 9rem);
 }
 
 .profiles-panel {
@@ -28,9 +29,11 @@ h1 {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  max-width: 300px;
+  overflow-y: auto;
 }
 
-/* Estilo para pestañas */
+/* Tabs */
 .tabs {
   display: flex;
   border-bottom: 1px solid #ddd;
@@ -63,6 +66,7 @@ h1 {
 .profile-list {
   list-style: none;
   padding: 0;
+  overflow-y: auto;
 }
 
 .profile-item {
@@ -91,7 +95,7 @@ h1 {
   border-left: 4px solid #2196f3;
 }
 
-/* Estilo para corazón de favoritos */
+/* Favorite Icon */
 .favorite-icon {
   cursor: pointer;
   color: #ccc;
@@ -109,6 +113,15 @@ h1 {
   border-radius: 8px;
   padding: 15px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#selectedProfileInfo {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .profile-info {
@@ -132,9 +145,71 @@ h1 {
 .buttons-row {
   display: flex;
   gap: 10px;
+  margin-bottom: 20px;
 }
 
-/* Ventana Modal */
+/* Integrated Terminal */
+.terminal-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: #1e1e1e;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #252526;
+  padding: 8px 12px;
+  border-bottom: 1px solid #333;
+}
+
+.terminal-title {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.terminal-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.terminal-action {
+  background-color: #0e639c;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.terminal-action:hover {
+  background-color: #1177bb;
+}
+
+.terminal-action.close {
+  background-color: #d32f2f;
+}
+
+.terminal-action.close:hover {
+  background-color: #f44336;
+}
+
+.embedded-terminal {
+  flex: 1;
+  padding: 5px;
+  min-height: 300px;
+  max-height: 700px;
+  overflow: hidden;
+}
+
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -201,7 +276,7 @@ h1 {
   color: #333;
 }
 
-/* Formulario */
+/* Form */
 .form-group {
   margin-bottom: 15px;
 }
@@ -230,6 +305,7 @@ select {
   border-top: 1px solid #eee;
 }
 
+/* Buttons */
 button {
   background: #2196f3;
   color: white;
@@ -238,6 +314,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 button:hover {
@@ -290,6 +367,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Status Messages */
 .status-message {
   margin-top: 20px;
   padding: 10px;
@@ -308,10 +386,12 @@ button:disabled {
   border-left: 4px solid #c62828;
 }
 
+/* Utility Classes */
 .hidden {
-  display: none;
+  display: none !important;
 }
 
+/* Welcome Message */
 .welcome-message {
   text-align: center;
   padding: 40px 20px;
@@ -325,9 +405,4 @@ button:disabled {
 
 .welcome-message p {
   margin-bottom: 25px;
-}
-.actions-row {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-start;
 }

@@ -10,7 +10,6 @@ contextBridge.exposeInMainWorld('sshManager', {
   connectSSH: profile => ipcRenderer.invoke('connect-ssh', profile),
   openShell: profileName => ipcRenderer.invoke('open-shell', profileName),
   disconnectSSH: profileName => ipcRenderer.invoke('disconnect-ssh', profileName),
-  terminalInput: (data, windowId) => ipcRenderer.invoke('terminal-input', { data, windowId }),
+  terminalInput: data => ipcRenderer.invoke('terminal-input', data),
   onTerminalData: callback => ipcRenderer.on('terminal-data', callback),
-  getWindowId: () => ipcRenderer.invoke('get-window-id'),
 });
