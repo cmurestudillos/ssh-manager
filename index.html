@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestor de Conexiones SSH</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>
+      Gestor de Conexiones SSH
+      <div class="profile-actions">
+        <button id="newProfileButton" class="create-button">Nueva Conexión</button>
+      </div>
+    </h1>
+    <div class="container">
+      <div class="profiles-panel">
+        <h2>Perfiles Guardados</h2>
+        <!-- Pestañas -->
+        <div class="tabs">
+          <div id="allTab" class="tab active">Todos</div>
+          <div id="favoritesTab" class="tab">Favoritos</div>
+        </div>
+
+        <ul id="profileList" class="profile-list">
+          <!-- Los perfiles se cargarán aquí -->
+        </ul>
+      </div>
+
+      <div class="form-panel" id="formPanel">
+        <h2 id="formTitle">Configuración de Conexión</h2>
+        <form id="sshForm">
+          <div class="form-group">
+            <label for="profileName">Nombre del Perfil</label>
+            <input type="text" id="profileName" required />
+          </div>
+
+          <div class="form-group">
+            <label for="host">Host</label>
+            <input type="text" id="host" required />
+          </div>
+
+          <div class="form-group">
+            <label for="port">Puerto</label>
+            <input type="number" id="port" value="22" />
+          </div>
+
+          <div class="form-group">
+            <label for="username">Usuario</label>
+            <input type="text" id="username" required />
+          </div>
+
+          <div class="form-group">
+            <label for="authType">Tipo de Autenticación</label>
+            <select id="authType">
+              <option value="password">Contraseña</option>
+              <option value="keyFile">Archivo de Clave</option>
+            </select>
+          </div>
+
+          <div id="passwordGroup" class="form-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" />
+          </div>
+
+          <div id="keyFileGroup" class="form-group hidden">
+            <label for="keyFile">Archivo de Clave</label>
+            <div style="display: flex; gap: 10px">
+              <input type="text" id="keyFile" readonly />
+              <button type="button" id="browseKeyFile">Explorar</button>
+            </div>
+          </div>
+
+          <div id="passphraseGroup" class="form-group hidden">
+            <label for="passphrase">Frase de Contraseña (si es necesario)</label>
+            <input type="password" id="passphrase" />
+          </div>
+
+          <div class="actions-row">
+            <button type="button" id="saveButton">Guardar Perfil</button>
+            <button type="button" id="connectButton">Conectar</button>
+            <button type="button" id="openTerminalButton" class="terminal hidden" disabled>Abrir Terminal</button>
+            <button type="button" id="deleteButton" class="delete" disabled>Eliminar Perfil</button>
+          </div>
+        </form>
+
+        <div id="statusMessage" class="status-message hidden"></div>
+      </div>
+
+      <!-- Panel de bienvenida / sin selección -->
+      <div class="welcome-panel" id="welcomePanel">
+        <div class="welcome-content">
+          <h2>Gestor de Conexiones SSH</h2>
+          <p>Selecciona un perfil existente o crea uno nuevo para comenzar.</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>

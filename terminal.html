@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terminal SSH</title>
+    <!-- Incluir las hojas de estilo de xterm.js -->
+    <link rel="stylesheet" href="node_modules/xterm/css/xterm.css" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #1e1e1e;
+        overflow: hidden;
+      }
+
+      #terminal-container {
+        width: 100%;
+        height: 100%;
+        padding: 5px;
+        box-sizing: border-box;
+      }
+
+      /* Toolbar y botones */
+      .terminal-toolbar {
+        display: flex;
+        background-color: #252526;
+        padding: 5px;
+        border-bottom: 1px solid #333;
+      }
+
+      .terminal-toolbar button {
+        background-color: #0e639c;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        margin-right: 5px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .terminal-toolbar button:hover {
+        background-color: #1177bb;
+      }
+
+      /* Contenedor principal ajustado */
+      .main-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      /* El terminal ahora ocupa el resto del espacio */
+      .terminal-wrapper {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* Personalización de la terminal */
+      .terminal {
+        font-family: 'Menlo', 'Consolas', monospace;
+        font-size: 14px;
+      }
+
+      .terminal-cursor {
+        color: #aeafad;
+        background-color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <!-- Barra de herramientas -->
+      <div class="terminal-toolbar">
+        <button id="clearBtn">Limpiar Terminal</button>
+        <button id="increaseFontBtn">A+</button>
+        <button id="decreaseFontBtn">A-</button>
+        <button id="disconnectBtn">Desconectar</button>
+      </div>
+
+      <!-- Contenedor para la terminal -->
+      <div class="terminal-wrapper">
+        <div id="terminal-container"></div>
+      </div>
+    </div>
+
+    <!-- Scripts de xterm.js -->
+    <script src="node_modules/xterm/lib/xterm.js"></script>
+    <script src="node_modules/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
+    <script src="terminal.js"></script>
+  </body>
+</html>
