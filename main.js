@@ -24,8 +24,8 @@ const activeConnections = new Map();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 1024,
+    width: 1800,
+    height: 1169,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,

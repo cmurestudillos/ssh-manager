@@ -3,7 +3,5 @@ package-lock.json
 dist
 coverage
 release
-*.log
-.vscode
 .idea
 .DS_Store
