@@ -10,7 +10,8 @@
 *.min.js
 *.min.css
 
+# Lock files
+pnpm-lock.yaml
+
 # Otros
-package-lock.json
-yarn.lock
 *.md

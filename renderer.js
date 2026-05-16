@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let favorites = [];
   let selectedProfile = null;
   let activeTab = 'all'; // 'all' o 'favorites'
-  let isNewProfile = false; // Para controlar si estamos creando un nuevo perfil
 
   // Cargar perfiles y favoritos al inicio
   loadProfiles();
@@ -66,7 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
   allTab.addEventListener('click', () => switchTab('all'));
   favoritesTab.addEventListener('click', () => switchTab('favorites'));
   newProfileButton.addEventListener('click', createNewProfile);
-  if (welcomeNewButton) welcomeNewButton.addEventListener('click', createNewProfile);
+  if (welcomeNewButton) {
+    welcomeNewButton.addEventListener('click', createNewProfile);
+  }
 
   // Event Listeners - Acciones de perfil
   connectButton.addEventListener('click', connectSSH);
@@ -218,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Crear nuevo perfil
   function createNewProfile() {
-    isNewProfile = true;
     modalTitle.textContent = 'Nueva Conexión';
 
     // Limpiar formulario
@@ -230,9 +230,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Editar perfil existente
   function editProfile() {
-    if (!selectedProfile) return;
+    if (!selectedProfile) {
+      return;
+    }
 
-    isNewProfile = false;
     modalTitle.textContent = 'Editar Conexión';
 
     // Llenar formulario con datos del perfil
@@ -475,6 +476,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // Notificar dimensiones iniciales al servidor SSH
+      window.sshManager.resizeTerminal(terminal.cols, terminal.rows);
+
       // Manejar datos de entrada del usuario
       terminal.onData(data => {
         window.sshManager.terminalInput(data);
@@ -514,30 +518,30 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cargar xterm.css
         const linkElem = document.createElement('link');
         linkElem.rel = 'stylesheet';
-        linkElem.href = 'node_modules/xterm/css/xterm.css';
+        linkElem.href = 'node_modules/@xterm/xterm/css/xterm.css';
         document.head.appendChild(linkElem);
 
         // Cargar xterm.js
         const scriptXterm = document.createElement('script');
-        scriptXterm.src = 'node_modules/xterm/lib/xterm.js';
+        scriptXterm.src = 'node_modules/@xterm/xterm/lib/xterm.js';
         document.body.appendChild(scriptXterm);
 
         scriptXterm.onload = () => {
           // Cargar addon-fit
           const scriptFit = document.createElement('script');
-          scriptFit.src = 'node_modules/xterm-addon-fit/lib/xterm-addon-fit.js';
+          scriptFit.src = 'node_modules/@xterm/addon-fit/lib/addon-fit.js';
           document.body.appendChild(scriptFit);
 
           scriptFit.onload = () => {
             resolve();
           };
 
-          scriptFit.onerror = err => {
+          scriptFit.onerror = () => {
             reject(new Error('Error al cargar xterm-addon-fit.js'));
           };
         };
 
-        scriptXterm.onerror = err => {
+        scriptXterm.onerror = () => {
           reject(new Error('Error al cargar xterm.js'));
         };
       } catch (err) {
@@ -548,7 +552,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Eliminar perfil
   async function deleteProfile() {
-    if (!selectedProfile) return;
+    if (!selectedProfile) {
+      return;
+    }
 
     if (confirm(`¿Estás seguro de que quieres eliminar el perfil "${selectedProfile.name}"?`)) {
       try {
@@ -573,21 +579,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function increaseTerminalFont() {
-    if (!terminal) return;
+    if (!terminal) {
+      return;
+    }
 
     if (terminalFontSize < 24) {
       terminalFontSize += 1;
-      terminal.setOption('fontSize', terminalFontSize);
+      terminal.options.fontSize = terminalFontSize;
       fitAddon.fit();
     }
   }
 
   function decreaseTerminalFont() {
-    if (!terminal) return;
+    if (!terminal) {
+      return;
+    }
 
     if (terminalFontSize > 8) {
       terminalFontSize -= 1;
-      terminal.setOption('fontSize', terminalFontSize);
+      terminal.options.fontSize = terminalFontSize;
       fitAddon.fit();
     }
   }
@@ -610,8 +620,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleTerminalResize() {
-    if (fitAddon) {
+    if (fitAddon && terminal) {
       fitAddon.fit();
+      window.sshManager.resizeTerminal(terminal.cols, terminal.rows);
     }
   }
 

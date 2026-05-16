@@ -1,11 +1,9 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, safeStorage } = require('electron');
 const path = require('path');
 const Store = require('electron-store');
 const { Client } = require('ssh2');
 const fs = require('fs');
-const os = require('os');
 
-// Configurar almacenamiento persistente
 const store = new Store({
   schema: {
     sshProfiles: {
@@ -21,6 +19,33 @@ const store = new Store({
 
 let mainWindow;
 const activeConnections = new Map();
+
+function encryptValue(value) {
+  if (!value || !safeStorage.isEncryptionAvailable()) {
+    return value;
+  }
+  return safeStorage.encryptString(value).toString('base64');
+}
+
+function decryptValue(value) {
+  if (!value || !safeStorage.isEncryptionAvailable()) {
+    return value;
+  }
+  try {
+    return safeStorage.decryptString(Buffer.from(value, 'base64'));
+  } catch {
+    return value; // Fallback para perfiles guardados antes del cifrado
+  }
+}
+
+function getDecryptedProfiles() {
+  const profiles = store.get('sshProfiles', []);
+  return profiles.map(p => ({
+    ...p,
+    password: p.password ? decryptValue(p.password) : p.password,
+    passphrase: p.passphrase ? decryptValue(p.passphrase) : p.passphrase,
+  }));
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -43,18 +68,20 @@ app.whenReady().then(() => {
   createWindow();
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   });
 });
 
 app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
 
-// Manejar eventos desde el renderer
 ipcMain.handle('get-ssh-profiles', async () => {
-  const profiles = store.get('sshProfiles', []);
-  return profiles;
+  return getDecryptedProfiles();
 });
 
 ipcMain.handle('get-favorites', async () => {
@@ -66,10 +93,8 @@ ipcMain.handle('toggle-favorite', async (event, profileName) => {
   const index = favorites.indexOf(profileName);
 
   if (index === -1) {
-    // Añadir a favoritos
     favorites.push(profileName);
   } else {
-    // Quitar de favoritos
     favorites.splice(index, 1);
   }
 
@@ -80,17 +105,21 @@ ipcMain.handle('toggle-favorite', async (event, profileName) => {
 ipcMain.handle('save-ssh-profile', async (event, profile) => {
   const profiles = store.get('sshProfiles', []);
 
-  // Si ya existe un perfil con el mismo nombre, actualizarlo
-  const existingIndex = profiles.findIndex(p => p.name === profile.name);
+  const profileToStore = {
+    ...profile,
+    password: profile.password ? encryptValue(profile.password) : profile.password,
+    passphrase: profile.passphrase ? encryptValue(profile.passphrase) : profile.passphrase,
+  };
 
+  const existingIndex = profiles.findIndex(p => p.name === profileToStore.name);
   if (existingIndex >= 0) {
-    profiles[existingIndex] = profile;
+    profiles[existingIndex] = profileToStore;
   } else {
-    profiles.push(profile);
+    profiles.push(profileToStore);
   }
 
   store.set('sshProfiles', profiles);
-  return profiles;
+  return getDecryptedProfiles();
 });
 
 ipcMain.handle('delete-ssh-profile', async (event, profileName) => {
@@ -98,14 +127,13 @@ ipcMain.handle('delete-ssh-profile', async (event, profileName) => {
   const updatedProfiles = profiles.filter(p => p.name !== profileName);
   store.set('sshProfiles', updatedProfiles);
 
-  // También eliminar de favoritos si existe
   const favorites = store.get('favorites', []);
   if (favorites.includes(profileName)) {
     const updatedFavorites = favorites.filter(name => name !== profileName);
     store.set('favorites', updatedFavorites);
   }
 
-  return updatedProfiles;
+  return getDecryptedProfiles();
 });
 
 ipcMain.handle('select-key-file', async () => {
@@ -128,7 +156,6 @@ ipcMain.handle('connect-ssh', async (event, profile) => {
     const conn = new Client();
 
     conn.on('ready', () => {
-      // Guardar la conexión activa
       activeConnections.set(profile.name, conn);
       resolve({ success: true, message: 'Conexión establecida con éxito' });
     });
@@ -141,10 +168,9 @@ ipcMain.handle('connect-ssh', async (event, profile) => {
       host: profile.host,
       port: profile.port || 22,
       username: profile.username,
-      keepaliveInterval: 10000, // Mantener conexión activa
+      keepaliveInterval: 10000,
     };
 
-    // Configurar autenticación
     if (profile.authType === 'password') {
       config.password = profile.password;
     } else if (profile.authType === 'keyFile') {
@@ -159,12 +185,10 @@ ipcMain.handle('connect-ssh', async (event, profile) => {
       }
     }
 
-    // Intentar la conexión
     conn.connect(config);
   });
 });
 
-// Abrir una shell interactiva
 ipcMain.handle('open-shell', async (event, profileName) => {
   const conn = activeConnections.get(profileName);
 
@@ -179,10 +203,8 @@ ipcMain.handle('open-shell', async (event, profileName) => {
         return;
       }
 
-      // Almacenar el stream para este proceso de renderizado
       const webContents = event.sender;
 
-      // Configurar el stream para reenviar datos al proceso de renderizado
       stream.on('data', data => {
         if (!webContents.isDestroyed()) {
           webContents.send('terminal-data', data);
@@ -201,15 +223,12 @@ ipcMain.handle('open-shell', async (event, profileName) => {
         }
       });
 
-      // Almacenar el stream para el sender actual
       event.sender.sshStream = stream;
-
       resolve({ success: true, message: 'Terminal abierta' });
     });
   });
 });
 
-// Enviar datos a la terminal
 ipcMain.handle('terminal-input', (event, data) => {
   const webContents = event.sender;
 
@@ -220,17 +239,23 @@ ipcMain.handle('terminal-input', (event, data) => {
   return false;
 });
 
-// Cerrar conexión SSH
+ipcMain.handle('resize-terminal', (event, cols, rows) => {
+  const stream = event.sender.sshStream;
+  if (stream) {
+    stream.setWindow(rows, cols, 0, 0);
+    return true;
+  }
+  return false;
+});
+
 ipcMain.handle('disconnect-ssh', (event, profileName) => {
   const conn = activeConnections.get(profileName);
   if (conn) {
-    // Si hay un stream asociado al remitente, cerrarlo
     if (event.sender.sshStream) {
       event.sender.sshStream.end();
       event.sender.sshStream = null;
     }
 
-    // Cerrar la conexión
     conn.end();
     activeConnections.delete(profileName);
     return { success: true, message: 'Desconectado' };

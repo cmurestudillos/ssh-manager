@@ -11,5 +11,6 @@ contextBridge.exposeInMainWorld('sshManager', {
   openShell: profileName => ipcRenderer.invoke('open-shell', profileName),
   disconnectSSH: profileName => ipcRenderer.invoke('disconnect-ssh', profileName),
   terminalInput: data => ipcRenderer.invoke('terminal-input', data),
+  resizeTerminal: (cols, rows) => ipcRenderer.invoke('resize-terminal', cols, rows),
   onTerminalData: callback => ipcRenderer.on('terminal-data', callback),
 });
