@@ -1,10 +1,20 @@
 {
   "name": "ssh-manager",
-  "version": "1.0.0",
-  "description": "Aplicación para gestionar conexiones SSH",
+  "version": "1.1.0",
+  "description": "Aplicación de escritorio para gestionar conexiones SSH",
   "main": "main.js",
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=11.0.0"
+  },
   "scripts": {
     "start": "electron .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "postinstall": "node node_modules/electron/install.js",
     "package:mac": "electron-builder build --mac",
     "package:win": "electron-builder build --windows",
     "package:linux": "electron-builder build --linux"
@@ -12,20 +22,28 @@
   "author": "Carlos Mur",
   "license": "MIT",
   "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
     "electron-store": "^8.1.0",
-    "node-pty": "^1.0.0",
-    "ssh2": "^1.15.0",
-    "xterm": "^5.3.0",
-    "xterm-addon-fit": "^0.8.0"
+    "ssh2": "^1.15.0"
   },
   "devDependencies": {
-    "electron": "^29.0.0",
-    "electron-builder": "^25.1.8",
+    "@eslint/js": "^9.22.0",
+    "electron": "^42.1.0",
+    "electron-builder": "^26.0.0",
     "eslint": "^9.22.0",
     "eslint-config-prettier": "^10.1.1",
-    "eslint-plugin-jsdoc": "^50.6.8",
     "eslint-plugin-prettier": "^5.2.3",
+    "globals": "^15.0.0",
     "prettier": "^3.5.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "cpu-features",
+      "electron",
+      "electron-winstaller",
+      "ssh2"
+    ]
   },
   "build": {
     "appId": "com.cmurestudillos.ssh-manager",
